@@ -33,7 +33,7 @@ class TimeZoneFieldBase(models.Field):
 
     description = "A pytz timezone object"
 
-    CHOICES = [(pytz.timezone(tz), tz) for tz in pytz.all_timezones]
+    CHOICES = [(tz, tz) for tz in pytz.all_timezones]
     MAX_LENGTH = 63
 
     def __init__(self, **kwargs):
@@ -46,28 +46,6 @@ class TimeZoneFieldBase(models.Field):
 
     def get_internal_type(self):
         return 'CharField'
-
-    def to_python(self, value):
-        "Convert to pytz timezone object"
-        return self._get_python_and_db_repr(value)[0]
-
-    def get_prep_value(self, value):
-        "Convert to string describing a valid pytz timezone object"
-        return self._get_python_and_db_repr(value)[1]
-
-    def _get_python_and_db_repr(self, value):
-        "Returns a tuple of (python representation, db representation)"
-        if value is None or value == '':
-            return (None, None)
-        if value is pytz.UTC or isinstance(value, pytz.tzinfo.BaseTzInfo):
-            return (value, smart_text(value))
-        if isinstance(value, six.string_types):
-            try:
-                return (pytz.timezone(value), value)
-            except pytz.UnknownTimeZoneError:
-                pass
-        raise ValidationError("Invalid timezone '%s'" % value)
-
 
 # http://packages.python.org/six/#six.with_metaclass
 class TimeZoneField(six.with_metaclass(models.SubfieldBase,
